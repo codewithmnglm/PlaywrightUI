@@ -1,21 +1,25 @@
 package com.factory;
 
 
-public  class PlaywrightBrowserFactory {
+public class PlaywrightBrowserFactory {
 
 
-    public BrowserFactory launchBrowser(String browserName) {
+    public static BrowserFactory browserFactory(String browserName) {
 
-        switch (browserName) {
 
-            case "chromium":
-                return new ChromiumBrowser();
+        if (browserName == null) {
+            throw new IllegalArgumentException("Browser name cannot be null");
+        }
+
+        switch (browserName.toLowerCase()) {
+            case "chrome":
+                return new ChromiumBrowserFactory();
             case "firefox":
-                return new FirefoxBrowser();
+                return new FirefoxFactoryBrowser();
             default:
-                throw new IllegalArgumentException("Invalid browser: " + browserName);
-
-
+                throw new IllegalArgumentException(
+                        "Unsupported browser: " + browserName
+                );
         }
 
 

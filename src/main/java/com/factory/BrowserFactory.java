@@ -1,10 +1,10 @@
 package com.factory;
 
-import com.microsoft.playwright.Page;
+import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Playwright;
 
 public interface BrowserFactory {
 
-     Page openBrowser();
-     void closeBrowser();
+    BrowserType getBrowserType(Playwright playwright);
 
 }

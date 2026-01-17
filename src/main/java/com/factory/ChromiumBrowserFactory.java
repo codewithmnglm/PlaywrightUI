@@ -3,10 +3,10 @@ package com.factory;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Playwright;
 
-public class ChromiumFactory implements BrowserFactory {
+public class ChromiumBrowserFactory implements BrowserFactory {
 
     @Override
-    public BrowserFactory getBrowserType(Playwright playwright) {
+    public BrowserType getBrowserType(Playwright playwright) {
         return playwright.chromium();
     }
 }

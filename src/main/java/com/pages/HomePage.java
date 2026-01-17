@@ -1,8 +1,10 @@
-package com.factory.page;
+package com.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import com.utils.TestLog;
+
 import java.util.regex.Pattern;
 
 
@@ -24,6 +26,12 @@ public class HomePage {
     Locator tomorrow;
     Locator selectDate;
     Locator bookingForWomen;
+    Locator knowMore;
+    Locator bookingForWomenPopUp;
+    Locator closeButton;
+    Locator yesBookingForWomen;
+    Locator notNowBookingForWomen;
+
 
 
     public HomePage(Page homePage) {
@@ -44,6 +52,12 @@ public class HomePage {
         tomorrow = homePage.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Search for Tomorrow"));
         selectDate = homePage.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(Pattern.compile("Select Date of Journey")));
         bookingForWomen= homePage.getByRole(AriaRole.SWITCH,new Page.GetByRoleOptions().setName("Booking for Women"));
+        knowMore= homePage.locator("//div[text()='Know more']");
+        bookingForWomenPopUp= homePage.getByRole(AriaRole.DIALOG,new Page.GetByRoleOptions().setName("Booking for Women"));
+        closeButton= bookingForWomenPopUp.getByLabel("Close");
+        yesBookingForWomen= bookingForWomenPopUp.getByRole(AriaRole.BUTTON,new Locator.GetByRoleOptions().setName("Yes, booking for women"));
+        notNowBookingForWomen= bookingForWomenPopUp.getByRole(AriaRole.BUTTON,new Locator.GetByRoleOptions().setName("Not now"));
+
     }
 
 
@@ -57,6 +71,7 @@ public class HomePage {
 
     public void searchBus(String source, String destination, String date) throws InterruptedException {
 
+        TestLog.stepInfo("Searching for bus tickets");
         from.click(new Locator.ClickOptions().setForce(true));
         from.clear();
         from.fill(source);
@@ -65,7 +80,6 @@ public class HomePage {
         to.clear();
         to.fill(destination);
         waitForSuggestions(destination);
-        tomorrow.click();
         searchBus.click();
     }
 
@@ -99,11 +113,21 @@ public class HomePage {
 
    }
 
+   public void bookingForWomen() throws InterruptedException {
+
+        enableBookingForWomen();
+        knowMore.click();
+        bookingForWomenPopUp.waitFor();
+       notNowBookingForWomen.click();
+
+   }
+
    public void enableBookingForWomen() throws InterruptedException {
 
         boolean flag = Boolean.parseBoolean(bookingForWomen.getAttribute("aria-checked"));
         if(!flag){
             bookingForWomen.click();
+            TestLog.stepInfo("Enabling Booking for Women");
         }
 
    }
@@ -112,6 +136,7 @@ public class HomePage {
         boolean flag = Boolean.parseBoolean(bookingForWomen.getAttribute("aria-checked"));
         if(flag){
             bookingForWomen.click();
+            TestLog.stepInfo("Disabling Booking for Women");
         }
 
     }
