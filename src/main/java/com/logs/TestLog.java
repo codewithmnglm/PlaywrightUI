@@ -1,4 +1,4 @@
-package com.utils;
+package com.logs;
 
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;

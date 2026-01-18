@@ -3,7 +3,7 @@ package com.pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import com.utils.TestLog;
+import com.logs.TestLog;
 
 import java.util.regex.Pattern;
 
