@@ -11,7 +11,7 @@ public class PlaywrightManager {
     private static ThreadLocal<BrowserContext> context = new ThreadLocal<>();
 
 
-    public static void initBrowser(String browserName) {
+    public static void initPage(String browserName) {
 
         playwright.set(Playwright.create());
         BrowserFactory browserFactory = PlaywrightBrowserFactory.browserFactory(browserName);
@@ -24,8 +24,24 @@ public class PlaywrightManager {
 
     }
 
+    public static void initBrowser(String browserName) {
+
+        playwright.set(Playwright.create());
+        BrowserFactory browserFactory = PlaywrightBrowserFactory.browserFactory(browserName);
+        browserType.set(browserFactory.getBrowserType(playwright.get()));
+        browserThreadLocal.set(browserType.get().launch(
+                new BrowserType.LaunchOptions().setHeadless(false)));
+
+
+
+    }
+
     public static Page getPage() {
         return page.get();
+    }
+
+    public static Browser getBrowser() {
+        return browserThreadLocal.get();
     }
 
     public static void closeBrowser() {

@@ -4,7 +4,11 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import com.logs.TestLog;
+import com.utils.CalendarUtil;
 
+import java.sql.SQLOutput;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 
@@ -31,6 +35,8 @@ public class HomePage {
     Locator closeButton;
     Locator yesBookingForWomen;
     Locator notNowBookingForWomen;
+    Locator previousMonth;
+    Locator nextMonth;
 
 
 
@@ -57,7 +63,8 @@ public class HomePage {
         closeButton= bookingForWomenPopUp.getByLabel("Close");
         yesBookingForWomen= bookingForWomenPopUp.getByRole(AriaRole.BUTTON,new Locator.GetByRoleOptions().setName("Yes, booking for women"));
         notNowBookingForWomen= bookingForWomenPopUp.getByRole(AriaRole.BUTTON,new Locator.GetByRoleOptions().setName("Not now"));
-
+        previousMonth= homePage.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Previous month"));
+        nextMonth= homePage.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Next month"));
     }
 
 
@@ -72,44 +79,27 @@ public class HomePage {
     public void searchBus(String source, String destination, String date) throws InterruptedException {
 
         TestLog.stepInfo("Searching for bus tickets");
-        from.click(new Locator.ClickOptions().setForce(true));
+
         from.clear();
+        from.click();
         from.fill(source);
-        waitForSuggestions(source);
-        to.click(new Locator.ClickOptions().setForce(true));
+        waitForSuggestions();
+        Locator firstSearch = homePage.locator("//div[contains(@class,'searchCategory')]").first();
+        firstSearch.getByRole(AriaRole.OPTION).getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions().setName(source).setExact(true)).click();
+        to.click();
         to.clear();
         to.fill(destination);
-        waitForSuggestions(destination);
+        waitForSuggestions();
+        Locator firstSearchTo = homePage.locator("//div[contains(@class,'searchCategory')]").first();
+        firstSearchTo.getByRole(AriaRole.OPTION).getByRole(AriaRole.HEADING, new Locator.GetByRoleOptions().setName("Chennai").setExact(true)).click();
+
+
         searchBus.click();
     }
 
-   public void waitForSuggestions(String input) throws InterruptedException {
+   public void waitForSuggestions() {
 
-       Thread.sleep(2000);
-       Locator listBox =
-               homePage.getByRole(
-                       AriaRole.LISTBOX,
-                       new Page.GetByRoleOptions()
-                               .setName("Search suggestions list")
-               );
-       Thread.sleep(2000);
-       Locator suggestionsCategory =
-               listBox.locator("//div[contains(@class,'searchCategory')]").first();
-       Locator suggestionOptions =
-               suggestionsCategory.getByRole(AriaRole.OPTION);
-       homePage.waitForCondition(() -> suggestionOptions.count() > 0);
-
-       int count = suggestionOptions.count();
-
-       for (int i = 0; i < count; i++) {
-           Locator option = suggestionOptions.nth(i);
-           String text = option.textContent().trim();
-
-           if (text.contains(input)) {
-               option.click();
-               break;
-           }
-       }
+       homePage.getByRole(AriaRole.LISTBOX, new Page.GetByRoleOptions().setName("Search suggestions list")).waitFor();
 
    }
 
@@ -139,6 +129,59 @@ public class HomePage {
             TestLog.stepInfo("Disabling Booking for Women");
         }
 
+    }
+
+    public void selectDate(int year, String monthInput,int day) throws InterruptedException {
+
+        HashMap<String,Integer> monthMap = CalendarUtil.mapCalendarMonth();
+        int month = monthMap.get(monthInput);
+        LocalDate selectedDate = LocalDate.of(year, month, day);
+        LocalDate today = LocalDate.now();
+
+        if (selectedDate.isBefore(today)) {
+            throw new RuntimeException(
+                    "Date before current date can't be selected in calendar"
+            );
+        }
+        selectDate.click();
+        while (true) {
+            String monthYearText = getMonthYear().innerText(); // "March 2026"
+            String[] parts = monthYearText.split(" ");
+
+            String currentMonth = parts[0];
+            int currentYear = Integer.parseInt(parts[1]);
+
+            if (currentYear == year &&
+                    monthMap.get(currentMonth) == month) {
+                break;
+            }
+
+            nextMonth.click();
+        }
+        Locator calendarRows =
+                homePage.getByRole(AriaRole.GRID)
+                        .getByRole(AriaRole.ROW);
+        Locator firstCalendarRow= calendarRows.first();
+        int firstRowCellCount = firstCalendarRow.getByRole(AriaRole.GRIDCELL).getByRole(AriaRole.BUTTON).count();
+        int rowIndex=0,cellIndex=0;
+        int remainingDays = Math.max(day - firstRowCellCount, 0);
+        if(remainingDays==0){
+            cellIndex=day-1;
+        }
+        else{
+            rowIndex= (remainingDays/7);
+            cellIndex=remainingDays%7;
+            if(cellIndex!=0){
+                rowIndex++;
+
+            }
+        }
+        calendarRows.nth(rowIndex).first().getByRole(AriaRole.GRIDCELL).nth(cellIndex-1).click();
+    }
+
+
+    public Locator getMonthYear(){
+        return homePage.locator("//p[contains(@class,'monthYear')]");
     }
 
 

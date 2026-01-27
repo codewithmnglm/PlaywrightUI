@@ -56,5 +56,17 @@ public class Mapping {
 
     }
 
+    public  enum FilterTypes {
+        Ratings,
+        Price,
+        DepartureTime
+    }
+
+    public static enum SortPrice {
+
+        lowToHigh,
+        highToLow,
+    }
+
 
 }

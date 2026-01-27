@@ -6,6 +6,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitForSelectorState;
 import com.logs.TestLog;
+import org.testng.Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,13 +90,27 @@ public class SearchPage {
 
     public void sortResultsBy(String filterType, String filter) {
 
-        Locator deptTime = searchPage.getByText(filterType,
-                new Page.GetByTextOptions().setExact(true));
+        Locator sortRadio = searchPage.getByRole(
+                AriaRole.RADIO,
+                new Page.GetByRoleOptions().setName(filterType)
+        );
 
-        if (filter.contains("lowToHigh")) deptTime.click();
-        else if (filter.contains("highToLow")) {
-            deptTime.dblclick();
+        Locator sortIcon = sortRadio.locator("i");
+
+        if (!Boolean.parseBoolean(sortRadio.getAttribute("aria-checked"))) {
+            sortRadio.click();
         }
+        boolean isAscending =
+                sortIcon.getAttribute("class").contains("uparrow");
+
+        if (filter.equalsIgnoreCase("lowToHigh") && !isAscending) {
+            sortRadio.click();
+        }
+
+        if (filter.equalsIgnoreCase("highToLow") && isAscending) {
+            sortRadio.click();
+        }
+
 
     }
 
@@ -223,6 +238,7 @@ public class SearchPage {
 
 
     }
+
     public void searchByDroppingPoint(String dropLocation) {
         Locator droppingPoint = searchPage.locator("//div[@id='dpIdentifier']");
         droppingPoint.click();
@@ -256,6 +272,7 @@ public class SearchPage {
         }
 
     }
+
     public void searchByDroppingPoint2(String dropLocation) {
 
         Locator droppingPoint = searchPage.locator("#dpIdentifier");
@@ -269,7 +286,7 @@ public class SearchPage {
                 droppingPoint.getByRole(AriaRole.LISTITEM)
                         .getByText(
                                 dropLocation
-                                );
+                        );
 
         dropText.waitFor(
                 new Locator.WaitForOptions()
@@ -284,9 +301,9 @@ public class SearchPage {
         droppingPoint.click(); // close filter
     }
 
-
-
-
+    public String getSearchPageTitle() {
+        return searchPage.title();
+    }
 
 
 }
